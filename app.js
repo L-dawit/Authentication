@@ -1,10 +1,10 @@
 //jshint esversion:6
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
-const crypto = require('crypto');
 mongoose.connect('mongodb://localhost:27017/usersDB');
 
 const userSchema = new mongoose.Schema({
@@ -21,8 +21,8 @@ userSchema.path('email').validate(async (value) => {
     return !emailCount;
   }, 'Email already exists');
 
-let encKey = crypto.randomBytes(32).toString('base64');
-let sigKey = crypto.randomBytes(64).toString('base64');
+let encKey = process.env.SOME_32BYTE_BASE64_STRING;
+let sigKey = process.env.SOME_64BYTE_BASE64_STRING;
 userSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey, encryptedFields: ['password'] })
 
 
