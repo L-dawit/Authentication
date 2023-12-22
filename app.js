@@ -4,15 +4,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
-const encrypt = require('mongoose-encryption');
+const md5 = require('md5');
+
+
+
 mongoose.connect('mongodb://localhost:27017/usersDB');
 
 const userSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        index: true,
-        unique: true
-    },
+    email: String,
     password: String
 });
 
@@ -21,9 +20,7 @@ userSchema.path('email').validate(async (value) => {
     return !emailCount;
   }, 'Email already exists');
 
-let encKey = process.env.SOME_32BYTE_BASE64_STRING;
-let sigKey = process.env.SOME_64BYTE_BASE64_STRING;
-userSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey, encryptedFields: ['password'] })
+
 
 
 
@@ -47,7 +44,7 @@ app.route('/register')
     .post((req, res) => {
         const newUser = new User({
             email: req.body.username,
-            password: req.body.password
+            password: md5(req.body.password)
         });
         newUser.save()
             .then(() => {res.render('secrets');
@@ -61,7 +58,7 @@ app.route('/login')
     })
     .post((req, res) => {
         const username = req.body.username;
-        const password = req.body.password;
+        const password = md5(req.body.password);
         User.findOne({email: username})
             .then(user => {
                 if(user) {
